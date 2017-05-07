@@ -60,14 +60,14 @@ let exploreExercise = (info) => {
 							
 							steps[stepIndex] = {
 								
-								name: $(elem).text(),
+								name: $(elem).text().trim(),
 								details: []
 								
 							};
 							
 						} else if ($(elem).is("p")) {
 							
-							let temp = $(elem).text();
+							let temp = $(elem).text().trim();
 							
 							temp = temp.trim();
 							
@@ -108,7 +108,7 @@ let processExerciseSnapshotData = function ($, exercise) {
 		let infoDivs = $('div', exercise);
 		let info = {};
 		
-		info["name"] = name;
+		info["name"] = name.trim();
 		
 		infoDivs.each(function (i, infoDiv) {
 			
@@ -133,8 +133,8 @@ let processExerciseSnapshotData = function ($, exercise) {
 				level = $('img', links[1]).attr('src');
 				level = level.toLowerCase().substring(level.lastIndexOf("_") + 1, level.lastIndexOf("."));
 				
-				info["link"] = link;
-				info["level"] = level;
+				info["link"] = link.trim();
+				info["level"] = level.trim();
 				
 			}
 			
