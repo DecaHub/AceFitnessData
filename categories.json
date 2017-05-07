@@ -1,0 +1,38 @@
+[
+    {
+        "part": "Ab",
+        "link": "/acefit/fitness_programs_exercise_library_list.aspx?bodypart=1"
+    },
+    {
+        "part": "Arm",
+        "link": "/acefit/fitness_programs_exercise_library_list.aspx?bodypart=2"
+    },
+    {
+        "part": "Back",
+        "link": "/acefit/fitness_programs_exercise_library_list.aspx?bodypart=3"
+    },
+    {
+        "part": "Butt & Hip",
+        "link": "/acefit/fitness_programs_exercise_library_list.aspx?bodypart=4"
+    },
+    {
+        "part": "Chest",
+        "link": "/acefit/fitness_programs_exercise_library_list.aspx?bodypart=5"
+    },
+    {
+        "part": "Full-Body",
+        "link": "/acefit/fitness_programs_exercise_library_list.aspx?bodypart=9"
+    },
+    {
+        "part": "Upper Leg",
+        "link": "/acefit/fitness_programs_exercise_library_list.aspx?bodypart=7"
+    },
+    {
+        "part": "Lower Leg",
+        "link": "/acefit/fitness_programs_exercise_library_list.aspx?bodypart=6"
+    },
+    {
+        "part": "Shoulder",
+        "link": "/acefit/fitness_programs_exercise_library_list.aspx?bodypart=8"
+    }
+]
