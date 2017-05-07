@@ -2,121 +2,110 @@
 
 const cheerio = require("cheerio");
 const fs = require("fs");
-const request = require("request");
+const request = require("request-promise-native");
 
 const coreURL = "https://www.acefitness.org";
 
-let bodyParts = [];
 let exercises = [];
 
 let exploreExercise = (info) => {
 	
-	console.log(`exploreExercise: ${JSON.stringify(info)}`);
-	
 	return new Promise((resolve, reject) => {
-		
-		console.log(`Exploring the steps of: ${info.name}`);
 		
 		let reqURL = coreURL + info.link;
 		
-		request(reqURL, (err, res, html) => {
-
-			console.log(`Now the request is processed for: ${info.name}`);
-
-			if (err) {
-
-				return reject(err);
-
+		let options = {
+			
+			uri: reqURL,
+			transform: function (body) {
+				return cheerio.load(body);
 			}
-
-			if (!err) {
-
-				const $ = cheerio.load(html);
-
+			
+		};
+		
+		request(options)
+			.then(function ($) {
+				
 				let stepsBlock = $("span", "div.col-right").children();
 				let h2s = $("h2", "div.col-right");
-
+				
 				let steps = [];
 				let stepIndex = -1;
-
+				
 				if (h2s.length === 0) {
-
+					
 					steps[++stepIndex] = {
-
+						
 						name: "General Steps",
 						details: []
-
+						
 					};
-
+					
 					stepsBlock.each(function (i, elem) {
-
+						
 						if ($(elem).is("a")) return;
-
+						
 						steps[stepIndex].details.push($(elem).text());
 						
 					});
-
-
-					return;
-
-				}
-
-				stepsBlock.each(function (i, elem) {
-
-
-					if ($(elem).is("h2")) {
-
-						stepIndex++;
+					
+				} else {
+					
+					stepsBlock.each(function (i, elem) {
 						
-						steps[stepIndex] = {
-
-							name: $(elem).text(),
-							details: []
-
-						};
-
-					} else if ($(elem).is("p")) {
-
-						let temp = $(elem).text();
 						
-						temp = temp.trim();
-
-						if (temp) {
+						if ($(elem).is("h2")) {
 							
-							steps[stepIndex].details.push(temp);
-
+							stepIndex++;
+							
+							steps[stepIndex] = {
+								
+								name: $(elem).text(),
+								details: []
+								
+							};
+							
+						} else if ($(elem).is("p")) {
+							
+							let temp = $(elem).text();
+							
+							temp = temp.trim();
+							
+							if (temp) {
+								
+								steps[stepIndex].details.push(temp);
+								
+							}
+							
 						}
-
-					}
-
-				});
-
+						
+					});
+					
+				}
+				
 				info.steps = steps;
-
+				
 				exercises.push(info);
-
+				
 				resolve();
-
-			}
-
-		})
+				
+			})
+			.catch(function (err) {
+				
+				return reject(err);
+				
+			})
 		
 	});
 	
 };
 
-let potentialFn = function (exercise) {
-	
-	// if (i > 0) return;
-	
-	const $ = cheerio.load(exercise);
+let processExerciseSnapshotData = function ($, exercise) {
 	
 	return new Promise((resolve, reject) => {
 		
 		let name = $('h3', exercise).text();
-		
 		let infoDivs = $('div', exercise);
-		
 		let info = {};
 		
 		info["name"] = name;
@@ -171,17 +160,16 @@ let potentialFn = function (exercise) {
 			
 		});
 		
-		console.log(`Done getting info card for: ${info.name}`);
-		
-		console.log(`Calling exploreExercise to get steps.`);
-		
 		exploreExercise(info)
-			.then(() => {
-				console.log("exploreExercise promise fulfilled.");
-				resolve();
+			.then((data) => {
+				
+				resolve(data);
+				
 			})
 			.catch((err) => {
-				console.log(`exploreExercise error: ${err}`);
+				
+				return reject(err);
+				
 			});
 		
 	});
@@ -194,57 +182,52 @@ let exploreBodyPart = function (url) {
 		
 		let reqURL = coreURL + url;
 		
-		request(reqURL,  (err, res, html) => {
+		let options = {
 			
-			console.log("Making URL request in exploreBodyPart");
-			
-			if (err) {
-				
-				return reject(err);
-				
+			uri: reqURL,
+			transform: function (body) {
+				return cheerio.load(body);
 			}
 			
-			if (!err) {
-				
-				const $ = cheerio.load(html);
+		};
+		
+		request(options)
+			.then(function ($) {
 				
 				let exerciseItems = $('.exercise-item', '.exercise-list');
-				
-				// All of these are exercises
 				
 				let promArr = [];
 				
 				$(exerciseItems).each(function (i, exercise) {
 					
-					if (i > 11) return;
-					
-					promArr.push(potentialFn(exercise));
+					promArr.push(processExerciseSnapshotData($, exercise));
 					
 				});
 				
 				Promise.all(promArr)
-					.then((list) => {
+					.then(() => {
 						
-						console.log("All the promises for this call of exploreBodyPart are solved.");
-					
-						resolve(list);
+						resolve();
 						
 					})
 					.catch((err => {
-					
+						
 						return reject(err);
-					
+						
 					}));
 				
-			}
-			
-		})
+			})
+			.catch(function (err) {
+				
+				return reject(err);
+				
+			})
 		
 	});
 	
 };
 
-let populateData = () => {
+let populateData = (array) => {
 	
 	return new Promise((resolve, reject) => {
 		
@@ -256,11 +239,9 @@ let populateData = () => {
 				
 			}
 			
-			console.log("Async read!");
+			array = JSON.parse(data);
 			
-			bodyParts = JSON.parse(data);
-			
-			resolve(bodyParts);
+			resolve(array);
 			
 		});
 		
@@ -269,23 +250,28 @@ let populateData = () => {
 };
 
 
-populateData(exploreBodyPart)
+populateData()
 	.then((data) => {
-		console.log("populateData has resolved.");
-		console.log("This is its data:");
-		console.log(data);
-
-		console.log("Now going to call exploreBodyPart()");
 		
-		Promise.all([
-			exploreBodyPart(bodyParts[0].link)
-		])
-			.then(() => {
+		let promArr = [];
+		
+		data.map(elem => {
 			
-				console.log("All exploreBodyPart promises are fulfilled.");
+			promArr.push(exploreBodyPart(elem.link));
+			
+		});
+		
+		Promise.all(promArr)
+			.then(() => {
 				
-				console.log(exercises.length);
-
+				fs.writeFile("exercises.json", JSON.stringify(exercises, null, 4), (err) => {
+					
+					if (err) throw err;
+					
+					console.log("The file has been saved!");
+					
+				})
+				
 			})
 			.catch((err) => {
 				

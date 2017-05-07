@@ -349,3 +349,5 @@ GitHub.sublime-settings
 /docs/lib/mathjs/core.js
 /docs/lib/mathjs/CONTRIBUTING.md
 /docs/lib/mathjs/lib/
+/experimental.js
+/exercises.json
